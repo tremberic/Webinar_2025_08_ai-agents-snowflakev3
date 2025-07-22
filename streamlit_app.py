@@ -4,6 +4,7 @@ import re
 import pandas as pd
 import _snowflake
 
+
 from snowflake.snowpark.context import get_active_session
 from bin_request_retrieval import fetch_bin_requests, mark_request_read
 from call_here_api import (
