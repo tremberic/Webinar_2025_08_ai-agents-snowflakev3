@@ -257,7 +257,7 @@ def direct_completion(prompt: str) -> str:
 
 def main():
     st.title("🚚 Bin Management & Mapping Assistant")
-    tab1, tab2 = st.tabs(["Review Requests", "Assistant & Maps"])
+    tab1, tab2, tab3 = st.tabs(["Review Requests", "Cortex Assistant", "Precisely MCP"])
 
     # ── Tab 1: Bin request review ──────────────────────────────────────
     with tab1:
@@ -332,12 +332,15 @@ def main():
                     with st.expander(lbl):
                         st.write(txt)
 
-            # 7) Fallback to MCP if Cortex gave nothing
-            if not text and not sql and not citations:
-                st.write("🤖 No Cortex response—asking Precisely MCP…")
-                mcp_reply = ask_mcp(query)
-                st.markdown(f"**Geo Agent:** {mcp_reply}")
-                st.session_state.messages.append({'role':'assistant','content':mcp_reply})
+
+    # ── Tab 3: Precisely MCP ───────────────────────────────────────────
+    with tab3:
+        st.subheader("Ask the Precisely MCP Geo Agent")
+        mcp_query = st.text_input("Your question for the Geo Agent:", key="mcp_input")
+        if st.button("Ask MCP", key="mcp_send") and mcp_query:
+            with st.spinner("Asking MCP..."):
+                mcp_reply = ask_mcp(mcp_query)
+                st.markdown(mcp_reply)
 
     # ── Sidebar: reset conversation ────────────────────────────────────
     with st.sidebar:
