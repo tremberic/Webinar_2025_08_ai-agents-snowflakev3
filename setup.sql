@@ -323,6 +323,85 @@ CREATE OR REPLACE CORTEX SEARCH SERVICE sales_conversation_search
     WHERE conversation_date >= '2024-01-01'  -- Fixed date instead of CURRENT_TIMESTAMP
 );
 
+CREATE TABLE CUSTOMERS_WEBINAR_202508 (
+    ID               NUMBER,    -- Unique customer ID
+    NAME             VARCHAR(100) NOT NULL,
+    EMAIL_ADDRESS    VARCHAR(255) NOT NULL UNIQUE,
+    PHONE_NUMBER     VARCHAR(30),           -- Optional, supports various phone formats
+    FULL_ADDRESS     VARCHAR(255) NOT NULL, -- Combined address as specified
+    STREET_ADDRESS   VARCHAR(100),          -- Separate fields for searching/filtering
+    CITY             VARCHAR(50),
+    STATE            VARCHAR(50),
+    POSTAL_CODE      VARCHAR(20),
+    COUNTRY          VARCHAR(50),
+    DATE_OF_BIRTH    DATE,                  -- Optional
+    CREATED_AT       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Record creation date
+    UPDATED_AT       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Last update
+    STATUS           VARCHAR(20) NOT NULL DEFAULT 'active',        -- active, inactive, etc.
+    NOTES            TEXT                   -- Optional comments about the customer
+);
+
+INSERT INTO CUSTOMERS_WEBINAR_202508
+(NAME, EMAIL_ADDRESS, PHONE_NUMBER, FULL_ADDRESS, STREET_ADDRESS, CITY, STATE, POSTAL_CODE, COUNTRY, DATE_OF_BIRTH, STATUS, NOTES) VALUES
+('Michael Brown', 'michael.brown@email.com', '646-555-0101', '1120 Madison Ave. New York, NY 10028', '1120 Madison Ave.', 'New York', 'NY', '10028', 'USA', '1981-04-12', 'active', ''),
+('Sarah Wilson', 'sarah.wilson@email.com', '917-555-0110', '780 Columbus Ave. New York, NY 10025', '780 Columbus Ave.', 'New York', 'NY', '10025', 'USA', '1993-08-23', 'active', ''),
+('David Lee', 'david.lee@email.com', '212-555-0115', '350 E 54th St. New York, NY 10022', '350 E 54th St.', 'New York', 'NY', '10022', 'USA', '1975-02-19', 'active', ''),
+('Maria Garcia', 'maria.garcia@email.com', '917-555-0119', '1540 1st Ave. New York, NY 10028', '1540 1st Ave.', 'New York', 'NY', '10028', 'USA', '1989-05-14', 'inactive', ''),
+('James Anderson', 'james.anderson@email.com', '646-555-0125', '230 E 83rd St. New York, NY 10028', '230 E 83rd St.', 'New York', 'NY', '10028', 'USA', '1997-09-05', 'pending', ''),
+('Ashley Moore', 'ashley.moore@email.com', '212-555-0130', '159 W 53rd St. New York, NY 10019', '159 W 53rd St.', 'New York', 'NY', '10019', 'USA', '1984-10-10', 'active', ''),
+('Joshua White', 'joshua.white@email.com', '718-555-0140', '245 W 99th St. New York, NY 10025', '245 W 99th St.', 'New York', 'NY', '10025', 'USA', '1986-03-28', 'active', ''),
+('Amanda Martinez', 'amanda.martinez@email.com', '917-555-0150', '311 E 75th St. New York, NY 10021', '311 E 75th St.', 'New York', 'NY', '10021', 'USA', '1990-11-15', 'inactive', ''),
+('Christopher Harris', 'christopher.harris@email.com', '646-555-0155', '600 W 110th St. New York, NY 10025', '600 W 110th St.', 'New York', 'NY', '10025', 'USA', '1987-07-02', 'active', ''),
+('Elizabeth Clark', 'elizabeth.clark@email.com', '212-555-0160', '120 E 90th St. New York, NY 10128', '120 E 90th St.', 'New York', 'NY', '10128', 'USA', '1991-01-19', 'pending', ''),
+('Matthew Robinson', 'matthew.robinson@email.com', '718-555-0167', '680 Riverside Dr. New York, NY 10031', '680 Riverside Dr.', 'New York', 'NY', '10031', 'USA', '1978-09-21', 'inactive', ''),
+('Lauren Lewis', 'lauren.lewis@email.com', '917-555-0173', '405 E 63rd St. New York, NY 10065', '405 E 63rd St.', 'New York', 'NY', '10065', 'USA', '1995-04-27', 'active', ''),
+('Brandon Walker', 'brandon.walker@email.com', '646-555-0179', '227 E 28th St. New York, NY 10016', '227 E 28th St.', 'New York', 'NY', '10016', 'USA', '1983-05-10', 'active', ''),
+('Emily Hall', 'emily.hall@email.com', '212-555-0183', '305 W 50th St. New York, NY 10019', '305 W 50th St.', 'New York', 'NY', '10019', 'USA', '1994-08-13', 'active', ''),
+('Andrew Allen', 'andrew.allen@email.com', '917-555-0186', '403 E 62nd St. New York, NY 10065', '403 E 62nd St.', 'New York', 'NY', '10065', 'USA', '1982-12-02', 'pending', ''),
+('Samantha Young', 'samantha.young@email.com', '646-555-0192', '88 W 89th St. New York, NY 10024', '88 W 89th St.', 'New York', 'NY', '10024', 'USA', '1979-10-09', 'active', ''),
+('Ryan King', 'ryan.king@email.com', '718-555-0197', '220 E 72nd St. New York, NY 10021', '220 E 72nd St.', 'New York', 'NY', '10021', 'USA', '1990-07-21', 'inactive', ''),
+('Natalie Scott', 'natalie.scott@email.com', '212-555-0202', '150 W 51st St. New York, NY 10019', '150 W 51st St.', 'New York', 'NY', '10019', 'USA', '1985-06-11', 'active', ''),
+('Justin Adams', 'justin.adams@email.com', '646-555-0210', '340 E 93rd St. New York, NY 10128', '340 E 93rd St.', 'New York', 'NY', '10128', 'USA', '1996-02-24', 'active', ''),
+('Victoria Baker', 'victoria.baker@email.com', '917-555-0217', '99 Jane St. New York, NY 10014', '99 Jane St.', 'New York', 'NY', '10014', 'USA', '1987-03-07', 'pending', ''),
+('Benjamin Carter', 'benjamin.carter@email.com', '212-555-0225', '135 W 96th St. New York, NY 10025', '135 W 96th St.', 'New York', 'NY', '10025', 'USA', '1999-12-01', 'active', ''),
+('Grace Mitchell', 'grace.mitchell@email.com', '718-555-0230', '215 W 98th St. New York, NY 10025', '215 W 98th St.', 'New York', 'NY', '10025', 'USA', '1993-04-30', 'inactive', ''),
+('Jacob Perez', 'jacob.perez@email.com', '646-555-0238', '1212 5th Ave. New York, NY 10029', '1212 5th Ave.', 'New York', 'NY', '10029', 'USA', '1988-01-12', 'active', ''),
+('Rachel Evans', 'rachel.evans@email.com', '917-555-0244', '160 W End Ave. New York, NY 10023', '160 W End Ave.', 'New York', 'NY', '10023', 'USA', '1980-09-03', 'active', ''),
+('Tyler Edwards', 'tyler.edwards@email.com', '212-555-0251', '740 Park Ave. New York, NY 10021', '740 Park Ave.', 'New York', 'NY', '10021', 'USA', '1991-05-26', 'pending', ''),
+('Megan Collins', 'megan.collins@email.com', '646-555-0256', '270 W 96th St. New York, NY 10025', '270 W 96th St.', 'New York', 'NY', '10025', 'USA', '1977-10-15', 'active', ''),
+('Jason Stewart', 'jason.stewart@email.com', '718-555-0262', '88 Greenwich St. New York, NY 10006', '88 Greenwich St.', 'New York', 'NY', '10006', 'USA', '1982-08-28', 'inactive', ''),
+('Hannah Morris', 'hannah.morris@email.com', '212-555-0267', '300 E 71st St. New York, NY 10021', '300 E 71st St.', 'New York', 'NY', '10021', 'USA', '1994-06-20', 'active', ''),
+('Alexander Rogers', 'alexander.rogers@email.com', '917-555-0271', '121 W 19th St. New York, NY 10011', '121 W 19th St.', 'New York', 'NY', '10011', 'USA', '1990-03-11', 'active', ''),
+('Sophie Reed', 'sophie.reed@email.com', '646-555-0278', '2109 Broadway St. New York, NY 10023', '2109 Broadway St.', 'New York', 'NY', '10023', 'USA', '1986-01-03', 'pending', ''),
+('Nathan Bell', 'nathan.bell@email.com', '718-555-0285', '150 E 44th St. New York, NY 10017', '150 E 44th St.', 'New York', 'NY', '10017', 'USA', '1985-12-28', 'active', ''),
+('Brittany Murphy', 'brittany.murphy@email.com', '212-555-0291', '400 E 84th St. New York, NY 10028', '400 E 84th St.', 'New York', 'NY', '10028', 'USA', '1996-09-10', 'active', ''),
+('Kyle Bailey', 'kyle.bailey@email.com', '646-555-0297', '35 Sutton Pl. New York, NY 10022', '35 Sutton Pl.', 'New York', 'NY', '10022', 'USA', '1980-07-24', 'inactive', ''),
+('Victoria Rivera', 'victoria.rivera@email.com', '917-555-0304', '100 Riverside Blvd. New York, NY 10069', '100 Riverside Blvd.', 'New York', 'NY', '10069', 'USA', '1989-11-18', 'active', ''),
+('Mason Campbell', 'mason.campbell@email.com', '718-555-0310', '215 W 91st St. New York, NY 10024', '215 W 91st St.', 'New York', 'NY', '10024', 'USA', '1993-05-02', 'pending', ''),
+('Chloe Morgan', 'chloe.morgan@email.com', '212-555-0316', '411 E 53rd St. New York, NY 10022', '411 E 53rd St.', 'New York', 'NY', '10022', 'USA', '1995-12-12', 'active', ''),
+('Ethan Cooper', 'ethan.cooper@email.com', '646-555-0323', '301 E 63rd St. New York, NY 10065', '301 E 63rd St.', 'New York', 'NY', '10065', 'USA', '1981-06-07', 'inactive', ''),
+('Sofia Cox', 'sofia.cox@email.com', '718-555-0330', '555 W 57th St. New York, NY 10019', '555 W 57th St.', 'New York', 'NY', '10019', 'USA', '1987-02-22', 'active', ''),
+('Henry Ward', 'henry.ward@email.com', '917-555-0335', '122 E 42nd St. New York, NY 10168', '122 E 42nd St.', 'New York', 'NY', '10168', 'USA', '1999-08-15', 'pending', ''),
+('Ella Ramirez', 'ella.ramirez@email.com', '646-555-0342', '160 E 38th St. New York, NY 10016', '160 E 38th St.', 'New York', 'NY', '10016', 'USA', '1991-11-30', 'active', ''),
+('Jack Brooks', 'jack.brooks@email.com', '212-555-0348', '50 W 34th St. New York, NY 10001', '50 W 34th St.', 'New York', 'NY', '10001', 'USA', '1988-03-18', 'active', ''),
+('Avery Wood', 'avery.wood@email.com', '718-555-0355', '300 Mercer St. New York, NY 10003', '300 Mercer St.', 'New York', 'NY', '10003', 'USA', '1983-10-05', 'inactive', ''),
+('Lily Bennett', 'lily.bennett@email.com', '646-555-0361', '241 E 86th St. New York, NY 10028', '241 E 86th St.', 'New York', 'NY', '10028', 'USA', '1998-05-09', 'active', ''),
+('Caleb Griffin', 'caleb.griffin@email.com', '917-555-0367', '120 E 87th St. New York, NY 10128', '120 E 87th St.', 'New York', 'NY', '10128', 'USA', '1977-08-21', 'active', ''),
+('Madison Torres', 'madison.torres@email.com', '212-555-0373', '45 Wall St. New York, NY 10005', '45 Wall St.', 'New York', 'NY', '10005', 'USA', '1992-12-29', 'pending', ''),
+('Owen Reed', 'owen.reed@email.com', '646-555-0378', '55 W 26th St. New York, NY 10010', '55 W 26th St.', 'New York', 'NY', '10010', 'USA', '1985-09-17', 'active', ''),
+('Isabella Long', 'isabella.long@email.com', '917-555-0385', '165 W End Ave. New York, NY 10023', '165 W End Ave.', 'New York', 'NY', '10023', 'USA', '1986-12-07', 'inactive', ''),
+('Elijah Foster', 'elijah.foster@email.com', '212-555-0391', '145 W 79th St. New York, NY 10024', '145 W 79th St.', 'New York', 'NY', '10024', 'USA', '1997-07-01', 'active', ''),
+('Aubrey Price', 'aubrey.price@email.com', '646-555-0397', '515 E 72nd St. New York, NY 10021', '515 E 72nd St.', 'New York', 'NY', '10021', 'USA', '1990-10-25', 'active', ''),
+('Mila Howard', 'mila.howard@email.com', '718-555-0404', '201 E 87th St. New York, NY 10128', '201 E 87th St.', 'New York', 'NY', '10128', 'USA', '1982-04-14', 'pending', ''),
+('Luke Perry', 'luke.perry@email.com', '212-555-0410', '222 E 39th St. New York, NY 10016', '222 E 39th St.', 'New York', 'NY', '10016', 'USA', '1979-01-25', 'active', ''),
+('Layla Russell', 'layla.russell@email.com', '646-555-0415', '111 W 67th St. New York, NY 10023', '111 W 67th St.', 'New York', 'NY', '10023', 'USA', '1993-11-16', 'inactive', ''),
+('Logan Jenkins', 'logan.jenkins@email.com', '917-555-0420', '30 Lincoln Plaza. New York, NY 10023', '30 Lincoln Plaza.', 'New York', 'NY', '10023', 'USA', '1984-06-29', 'active', ''),
+('Penelope Simmons', 'penelope.simmons@email.com', '718-555-0428', '250 W 50th St. New York, NY 10019', '250 W 50th St.', 'New York', 'NY', '10019', 'USA', '1998-01-04', 'active', '');
+
+
+
+
+
 CREATE OR REPLACE PNP.ETREMBLAY.MODELSACE STAGE models
     DIRECTORY = (ENABLE = TRUE);
 

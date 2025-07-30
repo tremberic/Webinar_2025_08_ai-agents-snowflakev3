@@ -11,3 +11,4 @@ dependencies:
   - requests=2.32.4
   - snowflake-snowpark-python=
   - streamlit=
+  - streamlit-folium=0.15.0

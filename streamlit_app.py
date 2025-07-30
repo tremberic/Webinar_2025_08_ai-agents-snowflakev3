@@ -3,6 +3,7 @@ import json
 import re
 import pandas as pd
 import _snowflake
+import streamlit_folium
 
 from snowflake.snowpark.context import get_active_session
 from bin_request_retrieval import fetch_bin_requests, mark_request_read
@@ -199,10 +200,34 @@ def direct_completion(prompt: str) -> str:
 
 def main():
     st.title("🚚 Bin Management & Mapping Assistant")
-    tab1, tab2 = st.tabs(["Review Requests","Assistant & Maps"])
 
-    # ── Tab 1: Bin request approval
-    with tab1:
+    # Sidebar navigation
+    page = st.sidebar.radio("Select view:", ["Customers list", "New requests", "Prospecting"])
+
+    # ── Prospecting view
+    if page == "Customers list":
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        query = "SELECT * FROM CUSTOMERS_WEBINAR_202508"
+        df = run_snowflake_query(query)
+        if df is not None:
+            pdf = df.to_pandas()
+
+            # optional: format any numeric columns as currency
+            # for col in pdf.select_dtypes(include=["int64", "float64"]):
+            #     pdf[col] = pdf[col].map("${:,.2f}".format)
+
+            st.header("📋 Customers list")
+            st.dataframe(
+                pdf, 
+                height=350,          # roughly 10‑12 rows tall
+                use_container_width=True
+            )
+
+
+# ── New requests view
+    elif page == "New requests":
         st.header("📥 Review New Bin Requests")
         if "req_idx" not in st.session_state:
             st.session_state.req_idx = 0
@@ -243,8 +268,8 @@ def main():
             if c3.button("➡️ Next", key=f"next_{mid}"):
                 st.session_state.req_idx += 1
 
-    # ── Tab 2: Chat + Maps
-    with tab2:
+    # ── Prospecting view
+    elif page == "Prospecting":
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
@@ -304,13 +329,14 @@ def main():
                         if not pdf.empty:
                             txt = pdf.iloc[0, 0]
                     with st.expander(lbl):
-                        st.write(txt)         
-                        
+                        st.write(txt)
+
     # ── Sidebar: reset chat
-    with st.sidebar:
-        if st.button("🔄 New Conversation", key="new_chat"):
-            st.session_state.messages = []
-            st.rerun()
+    if st.sidebar.button("🔄 New Conversation", key="new_chat"):
+        st.session_state.messages = []
+        st.rerun()
+
 
 if __name__ == "__main__":
     main()
+
