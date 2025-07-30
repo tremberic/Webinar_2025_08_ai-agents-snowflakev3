@@ -329,10 +329,13 @@ def main():
                         value=entry.get("requester", ""),
                         key=f"user_email_{sel_idx}"
                     )
+                    # ── auto‑extract any addresses from the body text ────────────────
+                    addresses = extract_addresses(sel.get("body", ""))
+                    initial_addr = addresses[0] if addresses else ""
                     st.text_input(
                         "Delivery Address",
-                        value=entry.get("address", ""),
-                        key=f"user_semail_{sel_idx}"
+                        value=initial_addr,
+                        key=f"delivery_addr_{sel_idx}"
                     )
 
         # fall through to existing bin‑requests review UI

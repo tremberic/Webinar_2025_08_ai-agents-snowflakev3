@@ -12,3 +12,4 @@ dependencies:
   - snowflake-snowpark-python=
   - streamlit=
   - streamlit-folium=0.15.0
+  - streamlit-option-menu=0.3.12
