@@ -275,7 +275,7 @@ def main():
     # ── Tab 2: Unified Chat + Maps + MCP ───────────────────────────────
     with tab2:
         if 'messages' not in st.session_state:
-            st.session_state.messages = []
+            st.session_state.messages = [{"role": "assistant", "content": "How can I help you?"}]
 
         # replay history
         for msg in st.session_state.messages:
