@@ -216,7 +216,6 @@ def main():
 
             # ── Map of customer addresses ───────────────────────────────────────
             # assumes your table has a FULL_ADDRESS column
-            st.header("📍 Customer Locations")
             coords = []
             for addr in pdf["FULL_ADDRESS"].dropna().unique():
                 lat, lon = geocode_address(addr)
@@ -228,7 +227,7 @@ def main():
                 st.info("No valid addresses to map")
 
             # ── Scrollable customer table ──────────────────────────────────────
-            st.header("📋 Customers List")
+            
             st.dataframe(
                 pdf,
                 height=350,           # about 10–12 rows before scrolling
@@ -237,8 +236,7 @@ def main():
 
 # ── New requests view
     elif page == "New requests":
-        st.header("📥 Review New Bin Requests")
-     
+      
         # fetch raw emails (with message_id, body, comment, etc.)
         df_emails = run_snowflake_query("SELECT * FROM emails_webinar_202508")
         if df_emails is None:
@@ -254,7 +252,7 @@ def main():
                 # pagination
                 if "email_page" not in st.session_state:
                     st.session_state.email_page = 0
-                page_size = 10
+                page_size = 5
                 total     = len(email_pdf)
                 n_pages   = (total - 1) // page_size + 1
                 page      = st.session_state.email_page
@@ -262,7 +260,7 @@ def main():
                 end       = min(start + page_size, total)
 
                 # columns to list
-                list_fields = [f for f in ("from_address","subject","received_at") if f in email_pdf.columns]
+                list_fields = [f for f in ("subject","received_at") if f in email_pdf.columns]
                 page_df = (
                     email_pdf
                     .iloc[start:end]
@@ -331,42 +329,23 @@ def main():
                         value=entry.get("requester", ""),
                         key=f"user_email_{sel_idx}"
                     )
+                    st.text_input(
+                        "Delivery Address",
+                        value=entry.get("address", ""),
+                        key=f"user_semail_{sel_idx}"
+                    )
 
         # fall through to existing bin‑requests review UI
-#        st.header("📥 Review New Bin Requests")
-#        if "req_idx" not in st.session_state:
-#            st.session_state.req_idx = 0
-#        requests = fetch_bin_requests()
-#        idx      = st.session_state.req_idx
-#
-#        if not requests:
-#            st.success("🎉 No new bin requests.")
-#        elif idx >= len(requests):
-#            st.success("🎉 All reviewed.")
-#        else:
-#            req = requests[idx]
- #           mid = req["message_id"]
-#            st.subheader(f"Request {idx+1}/{len(requests)}")
- #           st.markdown(f"> {req['raw_body']}")
- #           st.write("🔍 Full request dict:", req)
- #           if "json_output" in req:
-#                try:
-#                    st.json(json.loads(req["json_output"]))
-#                except:
-##                    st.write(req["json_output"])
-#            fmt  = st.text_input("Container Format", value=req.get("container_format",""), key=f"fmt_{mid}")
-#            qty  = st.text_input("Quantity",         value=req.get("quantity",""),         key=f"qty_{mid}")
-#            date = st.text_input("Date Needed",      value=req.get("date_needed",""),      key=f"date_{mid}")
-#            user = st.text_input("Requester",        value=req.get("requester",""),        key=f"user_{mid}")
-#            c1, c2, c3 = st.columns(3)
-#            if c1.button("✅ Approve", key=f"app_{mid}"):
-#                mark_request_read(mid)
-#                st.success("Approved")
-#            if c2.button("❌ Reject", key=f"rej_{mid}"):
-#                mark_request_read(mid)
-#                st.warning("Rejected")
-#            if c3.button("➡️ Next", key=f"next_{mid}"):
+            c1, c2, c3 = st.columns(3)
+            if c1.button("✅ Approve"):
+               # mark_request_read(mid)
+                st.success("Approved")
+            if c2.button("❌ Reject"):
+              #  mark_request_read(mid)
+                st.warning("Rejected")
+            if c3.button("📤 Generate Proposal"):
 #                st.session_state.req_idx += 1
+                st.success("Proposal Generated")
 
    
     # ── Prospecting view
