@@ -13,6 +13,7 @@ from call_here_api import (
     decode_polyline,
     display_map,
 )
+from call_precisely_api import call_precisely_demographics
 
 session = get_active_session()
 
@@ -196,6 +197,7 @@ def direct_completion(prompt: str) -> str:
                 if c["type"] == "text":
                     text += c["text"]
     return text.strip()
+
 
 
 def main():
@@ -422,4 +424,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
