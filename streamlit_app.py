@@ -261,15 +261,50 @@ def main():
 
     # ── Tab 1: Bin request review ──────────────────────────────────────
     with tab1:
-        requests_list = fetch_bin_requests()
-        for req in requests_list:
-            st.write(req)
-            request_id = req.get('id') or req.get('request_id') or req.get('bin_id')
+        if 'bin_requests' not in st.session_state:
+            st.session_state.bin_requests = fetch_bin_requests()
+            st.session_state.current_request_index = 0
+
+        requests_list = st.session_state.bin_requests
+        # The rest of the new logic will be added in the next steps.
+        # For now, let's just display the current request.
+
+        index = st.session_state.current_request_index
+        if requests_list and 0 <= index < len(requests_list):
+            req = requests_list[index]
+
+            st.text_input("Container Format", value=req['container_format'], key=f"fmt_{req['message_id']}")
+            st.text_input("Quantity", value=req['quantity'], key=f"qty_{req['message_id']}")
+            st.text_input("Date Needed", value=req['date_needed'], key=f"date_{req['message_id']}")
+            st.text_input("Requester", value=req['requester'], key=f"req_{req['message_id']}")
+
+            with st.expander("Original Email Body"):
+                st.write(req['raw_body'])
+
+            request_id = req.get('message_id')
             if not request_id:
-                st.warning("No ID found; skipping this request")
-                continue
-            if st.button(f"Mark {request_id} as read", key=f"mark_{request_id}"):
-                mark_request_read(request_id)
+                st.warning("No message_id found for this request.")
+            else:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    if st.button("Approve", key=f"approve_{request_id}"):
+                        # For now, "Approve" just marks as read.
+                        # We can add logic here to save the edited fields.
+                        mark_request_read(request_id)
+                        st.session_state.current_request_index += 1
+                        st.experimental_rerun()
+                with col2:
+                    if st.button("Dismiss", key=f"dismiss_{request_id}"):
+                        st.session_state.current_request_index += 1
+                        st.experimental_rerun()
+                with col3:
+                    if st.button("Next", key=f"next_{request_id}"):
+                        st.session_state.current_request_index += 1
+                        st.experimental_rerun()
+        else:
+            st.write("No more requests.")
+            if st.button("Reload requests"):
+                del st.session_state.bin_requests
                 st.experimental_rerun()
 
     # ── Tab 2: Unified Chat + Maps + MCP ───────────────────────────────
