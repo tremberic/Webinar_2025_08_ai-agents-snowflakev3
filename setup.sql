@@ -435,6 +435,42 @@ ALTER STREAMLIT PNP.ETREMBLAY.V23DZEU56TC6GE2H --Streamlit ID
 SET EXTERNAL_ACCESS_INTEGRATIONS = (here_api_access_int)  
 SECRETS = ('here_api_key' = pnp.etremblay.here_api_key);
 
+- Donner accès à l'API PRECISELY et spécifier sa  KEY
+
+CREATE OR REPLACE NETWORK RULE precisely_api_rules  
+MODE = EGRESS  
+TYPE = HOST_PORT  
+VALUE_LIST = ('api.precisely.com', 'api.cloud.precisely.com');
+
+CREATE OR REPLACE SECRET precisely_api_key  
+TYPE = GENERIC_STRING  
+SECRET_STRING = 'REMOVED'; 
+
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION precisely_api_access_int  
+ALLOWED_NETWORK_RULES = (precisely_api_rules)  
+ALLOWED_AUTHENTICATION_SECRETS = (precisely_api_key)  
+ENABLED = TRUE;
+
+GRANT READ ON SECRET precisely_api_key TO ROLE PNP;
+GRANT READ ON SECRET here_api_key TO ROLE PNP;
+
+GRANT USAGE ON INTEGRATION here_api_access_int TO ROLE PNP;
+GRANT USAGE ON INTEGRATION precisely_api_access_int TO ROLE PNP;
+
+--Get Streamlit ID 
+SHOW STREAMLITS IN SCHEMA PNP.ETREMBLAY;
+
+ALTER STREAMLIT PNP.ETREMBLAY.FX2YIC80IVFSOBR7 --Streamlit ID  
+SET EXTERNAL_ACCESS_INTEGRATIONS = (precisely_api_access_int,here_api_access_int)  
+SECRETS = ('precisely_api_key' = pnp.etremblay.precisely_api_key,
+'here_api_key' = pnp.etremblay.here_api_key);
+
+
+
+
+
+
+
 Install precisely-mcp-servers
 https://github.com/PreciselyData/precisely-mcp-servers
 With all that in place, your local MCP server will auto‑detect 

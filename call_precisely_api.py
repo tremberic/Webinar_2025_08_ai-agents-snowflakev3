@@ -1,5 +1,5 @@
 #call_precisely_api.py 
-
+import streamlit as st
 import _snowflake
 import requests
 import os
@@ -10,10 +10,13 @@ PRECISELY_DEMO_URL = (
     "demographics-segmentation/v1/demographics/byaddress"
 )  # :contentReference[oaicite:0]{index=0}
 
+#Precisely precisely_api_key vs precisely_api_secret??
 
-secret = _snowflake.get_generic_secret_string("precisely_api_key")
-os.environ["PRECISELY_API_KEY"] = secret
+#secret = _snowflake.get_generic_secret_string("precisely_api_key")
+#os.environ["precisely_api_key"] = secret
 
+secret = _snowflake.get_generic_secret_string("precisely_api_secret")
+os.environ["precisely_api_key"] = secret
 
 def call_precisely_demographics(address: str) -> dict:
     params = {
@@ -22,7 +25,7 @@ def call_precisely_demographics(address: str) -> dict:
         "valueFormat": "PercentAsAvailable",
         "variableLevel": "Key",
     }
-    headers = {"apikey": PRECISELY_API_KEY}
+    headers = {"apikey": secret}
     resp = requests.get(PRECISELY_DEMO_URL, params=params, headers=headers, timeout=30)
     if resp.status_code == 200:
         return resp.json()
