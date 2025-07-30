@@ -5,6 +5,63 @@ from snowflake.snowpark.context import get_active_session
 
 session = get_active_session()
 
+def fetch_bin_request(message_id: str) -> dict:
+    """
+    Fetch and parse bin request details for exactly one email by message_id.
+    Returns a dict with the same keys as fetch_bin_requests(), or empty if not found.
+    """
+    REQUEST_SQL = f"""
+    SELECT
+      message_id,
+      body AS raw_body,
+      SNOWFLAKE.CORTEX.COMPLETE(
+        'claude-4-sonnet',
+        [
+          {{'role':'system',
+            'content': $$Extract a JSON object with exactly these keys:
+              "container_format","quantity","date_needed","requester".
+              Output only the JSON object (no markdown).$$}},
+          {{'role':'user', 'content': body}}
+        ],
+        {{}}
+      ) AS full_response
+    FROM emails_webinar_202508
+    WHERE message_id = '{message_id}'
+    """
+    df = session.sql(REQUEST_SQL)
+    pdf = df.to_pandas()
+    if pdf.empty:
+        return {}
+
+    row     = pdf.iloc[0]
+    raw     = row["RAW_BODY"] or ""
+    outer_j = row["FULL_RESPONSE"] or ""
+
+    try:
+        outer = json.loads(outer_j)
+    except json.JSONDecodeError:
+        outer = {}
+
+    choices = outer.get("choices", [])
+    msg_str = choices[0].get("messages", "") if choices else ""
+
+    try:
+        inner = json.loads(msg_str)
+    except json.JSONDecodeError:
+        inner = {}
+
+    return {
+        "message_id":       message_id,
+        "raw_body":         raw,
+        "json_output":      msg_str,
+        "container_format": inner.get("container_format", ""),
+        "quantity":         inner.get("quantity", ""),
+        "date_needed":      inner.get("date_needed", ""),
+        "requester":        inner.get("requester", ""),
+    }
+
+
+
 def fetch_bin_requests() -> list[dict]:
     """
     Fetch unread emails, call Cortex.COMPLETE, unwrap the envelope
@@ -77,6 +134,7 @@ def fetch_bin_requests() -> list[dict]:
         })
 
     return results
+
 
 def mark_request_read(message_id: str) -> None:
     session.sql(f"""

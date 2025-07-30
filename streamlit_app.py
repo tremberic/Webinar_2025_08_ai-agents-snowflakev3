@@ -6,7 +6,7 @@ import _snowflake
 import streamlit_folium
 
 from snowflake.snowpark.context import get_active_session
-from bin_request_retrieval import fetch_bin_requests, mark_request_read
+from bin_request_retrieval import fetch_bin_request, fetch_bin_requests, mark_request_read
 from call_here_api import (
     call_routing_here_api,
     call_geocoding_here_api,
@@ -214,60 +214,161 @@ def main():
         if df is not None:
             pdf = df.to_pandas()
 
-            # optional: format any numeric columns as currency
-            # for col in pdf.select_dtypes(include=["int64", "float64"]):
-            #     pdf[col] = pdf[col].map("${:,.2f}".format)
+            # ── Map of customer addresses ───────────────────────────────────────
+            # assumes your table has a FULL_ADDRESS column
+            st.header("📍 Customer Locations")
+            coords = []
+            for addr in pdf["FULL_ADDRESS"].dropna().unique():
+                lat, lon = geocode_address(addr)
+                if lat is not None and lon is not None:
+                    coords.append({"lat": lat, "lon": lon})
+            if coords:
+                st.map(pd.DataFrame(coords))
+            else:
+                st.info("No valid addresses to map")
 
-            st.header("📋 Customers list")
+            # ── Scrollable customer table ──────────────────────────────────────
+            st.header("📋 Customers List")
             st.dataframe(
-                pdf, 
-                height=350,          # roughly 10‑12 rows tall
+                pdf,
+                height=350,           # about 10–12 rows before scrolling
                 use_container_width=True
             )
-
 
 # ── New requests view
     elif page == "New requests":
         st.header("📥 Review New Bin Requests")
-        if "req_idx" not in st.session_state:
-            st.session_state.req_idx = 0
-
-        requests = fetch_bin_requests()
-        idx      = st.session_state.req_idx
-
-        if not requests:
-            st.success("🎉 No new bin requests.")
-        elif idx >= len(requests):
-            st.success("🎉 All reviewed.")
+     
+        # fetch raw emails (with message_id, body, comment, etc.)
+        df_emails = run_snowflake_query("SELECT * FROM emails_webinar_202508")
+        if df_emails is None:
+            st.error("Failed to fetch emails_webinar_202508.")
         else:
-            req = requests[idx]
-            mid = req["message_id"]
+            email_pdf = df_emails.to_pandas()
+            email_pdf.columns = email_pdf.columns.str.lower()
+            email_pdf = email_pdf.reset_index(drop=True)
 
-            st.subheader(f"Request {idx+1}/{len(requests)}")
-            st.markdown(f"> {req['raw_body']}")
-            st.write("🔍 Full request dict:", req)
+            if email_pdf.empty:
+                st.info("No emails found in emails_webinar_202508.")
+            else:
+                # pagination
+                if "email_page" not in st.session_state:
+                    st.session_state.email_page = 0
+                page_size = 10
+                total     = len(email_pdf)
+                n_pages   = (total - 1) // page_size + 1
+                page      = st.session_state.email_page
+                start     = page * page_size
+                end       = min(start + page_size, total)
 
-            if "json_output" in req:
-                try:
-                    st.json(json.loads(req["json_output"]))
-                except:
-                    st.write(req["json_output"])
+                # columns to list
+                list_fields = [f for f in ("from_address","subject","received_at") if f in email_pdf.columns]
+                page_df = (
+                    email_pdf
+                    .iloc[start:end]
+                    .reset_index()
+                    .rename(columns={"index":"orig_idx"})
+                )
 
-            fmt  = st.text_input("Container Format", value=req.get("container_format",""), key=f"fmt_{mid}")
-            qty  = st.text_input("Quantity",         value=req.get("quantity",""),         key=f"qty_{mid}")
-            date = st.text_input("Date Needed",      value=req.get("date_needed",""),      key=f"date_{mid}")
-            user = st.text_input("Requester",        value=req.get("requester",""),        key=f"user_{mid}")
+                # header
+                col_widths = [1] + [4]*len(list_fields) + [1]
+                hdr = st.columns(col_widths)
+                hdr[0].markdown("**#**")
+                for i, fld in enumerate(list_fields):
+                    hdr[i+1].markdown(f"**{fld.replace('_',' ').title()}**")
+                hdr[-1].markdown("**🔍**")
 
-            c1, c2, c3 = st.columns(3)
-            if c1.button("✅ Approve", key=f"app_{mid}"):
-                mark_request_read(mid)
-                st.success("Approved")
-            if c2.button("❌ Reject", key=f"rej_{mid}"):
-                mark_request_read(mid)
-                st.warning("Rejected")
-            if c3.button("➡️ Next", key=f"next_{mid}"):
-                st.session_state.req_idx += 1
+                # render rows
+                if "selected_email_idx" not in st.session_state:
+                    st.session_state.selected_email_idx = None
 
+                for i, row in page_df.iterrows():
+                    cols = st.columns(col_widths)
+                    cols[0].write(start + i + 1)
+                    for j, fld in enumerate(list_fields):
+                        cols[j+1].write(row.get(fld, ""))
+                    if cols[-1].button("🔍", key=f"view_{row.orig_idx}"):
+                        st.session_state.selected_email_idx = int(row.orig_idx)
+
+                # pagination controls
+                nav1, nav2, nav3 = st.columns([1,2,1])
+                if nav1.button("◀️ Prev", disabled=page == 0):
+                    st.session_state.email_page = page - 1
+                nav2.markdown(f"Page **{page+1}** of **{n_pages}**")
+                if nav3.button("Next ▶️", disabled=page >= n_pages - 1):
+                    st.session_state.email_page = page + 1
+
+                # show details & editable fields
+                sel_idx = st.session_state.selected_email_idx
+                if sel_idx is not None and 0 <= sel_idx < total:
+                    sel = email_pdf.loc[sel_idx]
+                    st.markdown("---")
+                    st.subheader(f"Details for Email #{sel_idx+1}")
+                    st.markdown(f"**Body:**  \n{sel.get('body','*(no body found)*')}")
+                    st.markdown(f"**Comment:**  \n{sel.get('comment','*(no comment found)*')}")
+
+                    # fetch parsed fields just for this message_id
+                    entry = fetch_bin_request(sel["message_id"])
+
+                    # editable inputs with initial values
+                    st.text_input(
+                        "Container Format",
+                        value=entry.get("container_format", ""),
+                        key=f"fmt_email_{sel_idx}"
+                    )
+                    st.text_input(
+                        "Quantity",
+                        value=entry.get("quantity", ""),
+                        key=f"qty_email_{sel_idx}"
+                    )
+                    st.text_input(
+                        "Date Needed",
+                        value=entry.get("date_needed", ""),
+                        key=f"date_email_{sel_idx}"
+                    )
+                    st.text_input(
+                        "Requester",
+                        value=entry.get("requester", ""),
+                        key=f"user_email_{sel_idx}"
+                    )
+
+        # fall through to existing bin‑requests review UI
+#        st.header("📥 Review New Bin Requests")
+#        if "req_idx" not in st.session_state:
+#            st.session_state.req_idx = 0
+#        requests = fetch_bin_requests()
+#        idx      = st.session_state.req_idx
+#
+#        if not requests:
+#            st.success("🎉 No new bin requests.")
+#        elif idx >= len(requests):
+#            st.success("🎉 All reviewed.")
+#        else:
+#            req = requests[idx]
+ #           mid = req["message_id"]
+#            st.subheader(f"Request {idx+1}/{len(requests)}")
+ #           st.markdown(f"> {req['raw_body']}")
+ #           st.write("🔍 Full request dict:", req)
+ #           if "json_output" in req:
+#                try:
+#                    st.json(json.loads(req["json_output"]))
+#                except:
+##                    st.write(req["json_output"])
+#            fmt  = st.text_input("Container Format", value=req.get("container_format",""), key=f"fmt_{mid}")
+#            qty  = st.text_input("Quantity",         value=req.get("quantity",""),         key=f"qty_{mid}")
+#            date = st.text_input("Date Needed",      value=req.get("date_needed",""),      key=f"date_{mid}")
+#            user = st.text_input("Requester",        value=req.get("requester",""),        key=f"user_{mid}")
+#            c1, c2, c3 = st.columns(3)
+#            if c1.button("✅ Approve", key=f"app_{mid}"):
+#                mark_request_read(mid)
+#                st.success("Approved")
+#            if c2.button("❌ Reject", key=f"rej_{mid}"):
+#                mark_request_read(mid)
+#                st.warning("Rejected")
+#            if c3.button("➡️ Next", key=f"next_{mid}"):
+#                st.session_state.req_idx += 1
+
+   
     # ── Prospecting view
     elif page == "Prospecting":
         if "messages" not in st.session_state:
