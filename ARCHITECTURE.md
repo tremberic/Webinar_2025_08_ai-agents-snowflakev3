@@ -78,6 +78,7 @@ The user interface is a Streamlit application with three main pages, each servin
     -   If one address is detected, it uses the **HERE API** to show it on a map and the **Precisely API** to fetch and display demographic data for that location.
     -   If two addresses are detected, it uses the **HERE API** to calculate and display a driving route between them.
 -   For all other queries, it uses the **Cortex Agent** to get an answer. The agent, in turn, uses **Cortex Analyst** to query structured `SALES_METRICS` data and **Cortex Search** to find information in unstructured `sales_conversations` data.
+-   [TO BE COMPLETED} The **PRECISELY API** is used when ??????
 
 ## Database Setup (`setup.sql`)
 
