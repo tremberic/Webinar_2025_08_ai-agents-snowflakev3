@@ -1,10 +1,10 @@
 # Application Architecture
 
-This document outlines the architecture of the Intelligent Sales Assistant application.
+This document outlines the architecture of the Snowflake Geo AI Webinar application.
 
 ## Overall Architecture
 
-The application is an **Intelligent Sales Assistant** built as a [Streamlit](https://streamlit.io/) web application. It provides a user interface for sales teams to analyze sales data, manage incoming customer requests, and explore new sales prospects.
+The application is an **Snowflake Geo AI Webinar** built as a [Streamlit](https://streamlit.io/) web application. It provides a user interface for sales teams to analyze sales data, manage incoming customer requests, and explore new sales prospects.
 
 The entire backend, including data storage, processing, and artificial intelligence capabilities, is powered by [Snowflake](https://www.snowflake.com/). The Streamlit application connects to Snowflake to execute queries, run AI models, and interact with external APIs through Snowflake's external access integrations.
 
