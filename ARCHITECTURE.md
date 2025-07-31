@@ -28,6 +28,15 @@ The application's intelligence is driven by several features of **Snowflake Cort
 
 -   **Purpose**: To act as an orchestrator that can use multiple "tools" (like Cortex Analyst and Cortex Search) to answer a complex question.
 -   **Usage**: The main "Prospecting" chat interface uses a Cortex Agent. When a user asks a question, the agent decides whether to use Cortex Analyst (for analytical queries), Cortex Search (for searching transcripts), or a combination of both. This is handled by the `snowflake_api_call` function in `streamlit_app.py`.
+-   **Agent orchestration logic**: 
+    -   If handle_address_logic returns False (i.e., no address scenario), the query goes to the Cortex Agent via snowflake_api_call(query).
+    -   That call uses two tools:
+        -   Cortex Analyst (text-to-SQL against sales_metrics using sales_metrics_model.yaml)
+        -   Cortex Search (semantic search over sales_conversations)
+        -   The agent auto-selects which tool(s) to use.
+    -   If Analyst produces SQL, it’s shown/sent to Snowflake and results rendered; if no SQL is inferred, there is a fallback to a plain LLM completion (direct_completion).
+    -   Citations from Search are used to fetch and display relevant conversation transcripts.
+
 
 ### Cortex `COMPLETE` Function
 
@@ -62,6 +71,7 @@ The user interface is a Streamlit application with three main pages, each servin
 
 -   This page displays a list of all customers from the `CUSTOMERS_WEBINAR_202508` table.
 -   It iterates through the customer addresses, uses the **HERE API** to geocode them, and then displays all customer locations on a map.
+-    Customers list page currently only uses the HERE API for geocoding customer addresses; it does not call Precisely for enrichment (potential enhancement).
 
 ### New requests
 
