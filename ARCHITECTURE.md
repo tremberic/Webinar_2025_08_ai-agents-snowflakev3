@@ -11,8 +11,8 @@ The entire backend, including data storage, processing, and artificial intellige
 ## Implementation Summary
 The Streamlit frontend exposes three primary pages—Customers List, New Requests, and Prospecting Chat—each interacting with Snowflake as the single backend via secure integrations and Cortex AI tooling.
 
--   **Customers List** queries CUSTOMERS_WEBINAR_202508 for customer data, geocodes addresses through the HERE API, and renders locations on a map.
--   New Requests pulls unread emails from emails_webinar_202508. For each email body, SNOWFLAKE.CORTEX.COMPLETE is invoked to parse and extract structured request fields (e.g., container format, quantity, date needed) and extract_addresses is used to prefill delivery addresses. Parsed data is presented for user review/approval.
+-   **Customers List** queries "CUSTOMERS" table for customer data, geocodes addresses through the HERE API, and renders locations on a map.
+-   New Requests pulls unread emails from "EMAILS" table. For each email body, SNOWFLAKE.CORTEX.COMPLETE is invoked to parse and extract structured request fields (e.g., container format, quantity, date needed) and extract_addresses is used to prefill delivery addresses. Parsed data is presented for user review/approval.
 -   **Prospecting Chat** first evaluates whether the user query contains one or two addresses. If so, it handles geocoding/routing via the HERE API and then, after re-extracting, enriches the first detected address with demographic data from the Precisely API. If no address is present, the query is forwarded to the Cortex Agent. The agent dynamically decides between:
     -   **Cortex Analyst** for converting natural language metric queries into SQL against sales_metrics,
     -   **Cortex Search** for semantic retrieval from sales_conversations,
@@ -80,14 +80,14 @@ The user interface is a Streamlit application with three main pages, each servin
 
 ### Customers list
 
--   This page displays a list of all customers from the `CUSTOMERS_WEBINAR_202508` table.
+-   This page displays a list of all customers from the "`"CUSTOMERS" table.
 -   It iterates through the customer addresses, uses the **HERE API** to geocode them, and then displays all customer locations on a map.
 -    Customers list page currently only uses the HERE API for geocoding customer addresses; it does not call Precisely for enrichment (potential enhancement).
 
 ### New requests
 
 -   This page is designed for processing incoming service requests from emails.
--   It fetches unread emails from the `emails_webinar_202508` table.
+-   It fetches unread emails from the "EMAILS" table.
 -   For each email, it uses the **Cortex `COMPLETE`** function (via `bin_request_retrieval.py`) to parse the email body and extract structured data (container format, quantity, etc.).
 -   It also uses a Cortex-powered function (`extract_addresses`) to automatically find and suggest the delivery address from the email text.
 -   The user can then review, approve, or reject the request.
