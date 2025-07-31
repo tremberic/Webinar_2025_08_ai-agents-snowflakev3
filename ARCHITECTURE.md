@@ -12,7 +12,7 @@ The entire backend, including data storage, processing, and artificial intellige
 The Streamlit frontend exposes three primary pages—Customers List, New Requests, and Prospecting Chat—each interacting with Snowflake as the single backend via secure integrations and Cortex AI tooling.
 
 -   **Customers List** queries "CUSTOMERS" table for customer data, geocodes addresses through the HERE API, and renders locations on a map.
--   New Requests pulls unread emails from "EMAILS" table. For each email body, SNOWFLAKE.CORTEX.COMPLETE is invoked to parse and extract structured request fields (e.g., container format, quantity, date needed) and extract_addresses is used to prefill delivery addresses. Parsed data is presented for user review/approval.
+-   **New Requests** pulls unread emails from "EMAILS" table. For each email body, SNOWFLAKE.CORTEX.COMPLETE is invoked to parse and extract structured request fields (e.g., container format, quantity, date needed) and extract_addresses is used to prefill delivery addresses. Parsed data is presented for user review/approval.
 -   **Prospecting Chat** first evaluates whether the user query contains one or two addresses. If so, it handles geocoding/routing via the HERE API and then, after re-extracting, enriches the first detected address with demographic data from the Precisely API. If no address is present, the query is forwarded to the Cortex Agent. The agent dynamically decides between:
     -   **Cortex Analyst** for converting natural language metric queries into SQL against sales_metrics,
     -   **Cortex Search** for semantic retrieval from sales_conversations,
