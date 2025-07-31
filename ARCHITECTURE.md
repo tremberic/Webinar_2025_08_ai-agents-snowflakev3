@@ -8,6 +8,17 @@ The application is an **Intelligent Sales Assistant** built as a [Streamlit](htt
 
 The entire backend, including data storage, processing, and artificial intelligence capabilities, is powered by [Snowflake](https://www.snowflake.com/). The Streamlit application connects to Snowflake to execute queries, run AI models, and interact with external APIs through Snowflake's external access integrations.
 
+## Implementation Summary
+The Streamlit frontend exposes three primary pages—Customers List, New Requests, and Prospecting Chat—each interacting with Snowflake as the single backend via secure integrations and Cortex AI tooling.
+
+-   **Customers List** queries CUSTOMERS_WEBINAR_202508 for customer data, geocodes addresses through the HERE API, and renders locations on a map.
+-   New Requests pulls unread emails from emails_webinar_202508. For each email body, SNOWFLAKE.CORTEX.COMPLETE is invoked to parse and extract structured request fields (e.g., container format, quantity, date needed) and extract_addresses is used to prefill delivery addresses. Parsed data is presented for user review/approval.
+-   **Prospecting Chat** first evaluates whether the user query contains one or two addresses. If so, it handles geocoding/routing via the HERE API and then, after re-extracting, enriches the first detected address with demographic data from the Precisely API. If no address is present, the query is forwarded to the Cortex Agent. The agent dynamically decides between:
+    -   **Cortex Analyst** for converting natural language metric queries into SQL against sales_metrics,
+    -   **Cortex Search** for semantic retrieval from sales_conversations,
+    -   or a **fallback general completion** when structured intent cannot be resolved. Results, relevant transcript snippets, and any enriched or mapped data are returned to the user in the chat interface.
+-   All external API calls (HERE and Precisely) are performed via Snowflake External Access Integrations with secrets stored securely. The sales_conversation_search Cortex Search service indexes transcript text to support semantic lookups. This summary reflects the live decision tree and enrichment logic in the implementation, including the fact that Precisely enrichment is applied only to the first extracted address when present.
+
 ## AI Elements (Snowflake Cortex)
 
 The application's intelligence is driven by several features of **Snowflake Cortex**. These AI capabilities are used to understand natural language, search through unstructured data, and automate data extraction.

@@ -1,0 +1,84 @@
+flowchart TD
+  subgraph UI["User / Sales Team & Streamlit UI"]
+    A[User / Sales Team]
+    B1[Customers List Page]
+    B2[New Requests Page]
+    B3[Prospecting Chat]
+  end
+
+  subgraph Backend["Snowflake Backend"]
+    T1[sales_conversations unstructured]
+    T2[sales_metrics structured]
+    T3[CUSTOMERS_WEBINAR_202508]
+    T4[emails_webinar_202508]
+    subgraph Cortex["Snowflake Cortex"]
+      CA[Cortex Analyst NL to SQL]
+      CS[Cortex Search semantic search]
+      CAgent[Cortex Agent orchestrator]
+      CC[COMPLETE summarization / extraction]
+    end
+  end
+
+  subgraph External["External Services via Secure External Access Integrations"]
+    H[HERE API Geocoding / Routing]
+    P[Precisely API Demographics enrichment]
+  end
+
+  subgraph Outputs["Rendered Outputs"]
+    O1[Customer Map]
+    O2[Parsed Request Form]
+    O3[Prospecting Answer + Maps + Demographics + Transcript Snippets]
+  end
+
+  %% user interactions
+  A --> B1
+  A --> B2
+  A --> B3
+
+  %% Customers list flow
+  B1 --> T3
+  T3 --> H
+  H --> B1
+  B1 --> O1
+
+  %% New requests flow
+  B2 --> T4
+  T4 --> CC
+  CC --> B2
+  CC --> O2
+  B2 --> O2
+
+  %% Prospecting flow
+  B3 --> Decision{Query contains address?}
+  Decision -- yes --> AddrLogic[handle_address_logic]
+  AddrLogic --> H
+  H --> B3
+  AddrLogic --> ExtractedAddr[extract_addresses_query]
+  ExtractedAddr --> P
+  P --> B3
+  B3 --> O3
+
+  Decision -- no --> CAgent
+  CAgent -->|structured intent| CA
+  CA --> T2
+  T2 --> CA
+  CAgent -->|unstructured intent| CS
+  CS --> T1
+  T1 --> CS
+  CAgent -->|fallback| DirectComp[direct_completion]
+  CAgent --> B3
+  CA --> B3
+  CS --> B3
+  DirectComp --> B3
+  B3 --> O3
+
+  %% styling via classes
+  classDef cortex fill:#eef,stroke:#333,stroke-width:1px;
+  classDef external fill:#dff,stroke:#333,stroke-width:1px;
+  classDef outputs fill:#ffe,stroke:#333,stroke-width:1px;
+  classDef decision fill:#f9f,stroke:#333,stroke-width:2px;
+
+  class CA,CS,CAgent,CC cortex
+  class H,P external
+  class O1,O2,O3 outputs
+  class Decision decision
